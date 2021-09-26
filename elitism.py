@@ -10,6 +10,13 @@ import numpy as np
 from math import fabs,sqrt
 import glob, os
 
+import argparse
+
+parser = argparse.ArgumentParser(description="set run_no, exp_name and enemy_type")
+parser.add_argument("--run_no",dest="run_no",default="1")
+parser.add_argument("--exp_name", dest="exp_name", default="elitism_demo_1")
+parser.add_argument("--enemy_type", dest="enemy_type",default="1")
+args = parser.parse_args()
 
 # choose this for not using visuals and thus making experiments faster
 headless = True
@@ -17,7 +24,7 @@ if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 
-experiment_name = 'elitism_demo'
+experiment_name = args.exp_name+'_'+args.run_no
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -25,7 +32,7 @@ n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[2],
+                  enemies=[int(args.enemy_type)],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
@@ -53,7 +60,7 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 dom_u = 1
 dom_l = -1
 npop = 100
-gens = 30
+gens = 15
 mutationChance = [0.2, 0.1] ## chance of mutation per child, and per genome 
 mutation = 0.1 ## dictates how much a genome can be mutated in percentage
 last_best = 0
