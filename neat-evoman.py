@@ -27,7 +27,7 @@ from math import fabs,sqrt
 import glob
 
 # parameters:
-n_generations = 3
+n_generations = 10
 headless = True
 should_visualize = True
 
@@ -90,19 +90,15 @@ def run(config_file):
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
 
-    # Show output of the most fit genome against training data.
-    print('\nOutput:')
-    #winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
-    print("To do, print output configuration here")
-
     # node_names = {-1:'A', -2: 'B', 0:'A XOR B'} #example of node names from xor problem
+
+    print("Took", time.time() - ini, "seconds in total.")
 
     if should_visualize:
         # try implementing the visualisation of the winning network
         visualize.draw_net(config, winner, True, node_names=None)
         visualize.plot_stats(stats, ylog=False, view=True)
         visualize.plot_species(stats, view=True)
-
     ## runs can be restored from checkpoints as follows:
     # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
     # p.run(eval_genomes, 1)
