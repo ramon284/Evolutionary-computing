@@ -8,7 +8,8 @@ https://neat-python.readthedocs.io/en/latest/xor_example.html
 from __future__ import print_function
 import os
 import neat
-import NEAT.visualize
+import NEAT.visualize as visualize
+import pygame
 
 
 # imports framework
@@ -26,10 +27,11 @@ from math import fabs,sqrt
 import glob
 
 # parameters:
-n_generations = 10
+n_generations = 3
+headless = True
+should_visualize = True
 
 # choose this for not using visuals and thus making experiments faster
-headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
@@ -53,13 +55,9 @@ env = Environment(experiment_name=experiment_name,
 
 env.state_to_log() # checks environment state
 
-
 ####   Optimization for controller solution (best genotype-weights for phenotype-network): Ganetic Algorihm    ###
 
 ini = time.time()  # sets time marker
-
-
-should_visualise = False
 
 def simulation(pcont):
     f, _ , _ ,_ = env.play(pcont=pcont)
@@ -97,14 +95,15 @@ def run(config_file):
     #winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
     print("To do, print output configuration here")
 
-    # node_names = {-1:'A', -2: 'B', 0:'A XOR B'}
+    # node_names = {-1:'A', -2: 'B', 0:'A XOR B'} #example of node names from xor problem
 
-    if should_visualise:
+    if should_visualize:
         # try implementing the visualisation of the winning network
-        # visualize.draw_net(config, winner, True, node_names=node_names)
+        visualize.draw_net(config, winner, True, node_names=None)
         visualize.plot_stats(stats, ylog=False, view=True)
         visualize.plot_species(stats, view=True)
 
+    ## runs can be restored from checkpoints as follows:
     # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
     # p.run(eval_genomes, 1)
 
@@ -115,5 +114,6 @@ if __name__ == '__main__':
     # here so that the script will run successfully regardless of the
     # current working directory.
     local_dir = os.path.dirname(__file__)
+    print("local dir:", local_dir)
     config_path = os.path.join(local_dir, 'NEAT/config_neat')
     run(config_path)

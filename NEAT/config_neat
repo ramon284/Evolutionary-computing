@@ -1,9 +1,9 @@
-#--- parameters for the XOR-2 experiment ---#
+#--- parameters for evoman ---#
 
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 3.9
-pop_size              = 100
+pop_size              = 10
 reset_on_extinction   = True
 no_fitness_termination = True
 
