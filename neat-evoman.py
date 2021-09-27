@@ -29,7 +29,7 @@ import glob
 # parameters:
 n_generations = 10
 headless = True
-should_visualize = True
+should_visualize = False
 
 # choose this for not using visuals and thus making experiments faster
 if headless:
@@ -44,7 +44,8 @@ if not os.path.exists(experiment_name):
 
 
 env = Environment(experiment_name=experiment_name,
-                  enemies=[2],
+                  enemies=[8],
+                  randomini = "yes",
                   playermode="ai",
                   player_controller=player_controller(),
                   enemymode="static",
@@ -62,6 +63,19 @@ ini = time.time()  # sets time marker
 def simulation(pcont):
     f, _ , _ ,_ = env.play(pcont=pcont)
     return f
+
+def get_statistics(winner):
+    wins = 0
+    ties = 0
+    fs = []
+    for _ in range(5):
+        f,p,e,t = env.play(pcont=winner)
+        fs.append(f)
+        if e == 0:
+            wins += 1
+        elif t == 0:
+            ties += 1
+    print(str(wins), "wins.", ties, "ties.", "Average fitness:", np.mean(fs), "Fiteness sd:", np.std(fs))
 
 def eval_genomes(genomes, config):
     for genome_id, genome in genomes:
@@ -93,6 +107,9 @@ def run(config_file):
     # node_names = {-1:'A', -2: 'B', 0:'A XOR B'} #example of node names from xor problem
 
     print("Took", time.time() - ini, "seconds in total.")
+
+    wcont = neat.nn.FeedForwardNetwork.create(winner, config)
+    get_statistics(wcont)
 
     if should_visualize:
         # try implementing the visualisation of the winning network
