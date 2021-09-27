@@ -9,12 +9,11 @@ import time
 import numpy as np
 from math import fabs,sqrt
 import glob, os
-
 import argparse
 
 parser = argparse.ArgumentParser(description="set run_no, exp_name and enemy_type")
 parser.add_argument("--run_no",dest="run_no",default="1")
-parser.add_argument("--exp_name", dest="exp_name", default="elitism_demo_1")
+parser.add_argument("--exp_name", dest="exp_name", default="elitism_demo_2")
 parser.add_argument("--enemy_type", dest="enemy_type",default="2")
 args = parser.parse_args()
 
@@ -39,32 +38,26 @@ env = Environment(experiment_name=experiment_name,
                   level=2,
                   speed="fastest")
 
-# default environment fitness is assumed for experiment
 
 env.state_to_log() # checks environment state
-
-
-####   Optimization for controller solution (best genotype-weights for phenotype-network): Ganetic Algorihm    ###
-
 ini = time.time()  # sets time marker
 
-
-# genetic algorithm params
 
 run_mode = 'train' # train or test
 
 # number of weights for multilayer with 10 hidden neurons
-n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
+nweights = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 
 
-dom_u = 1
-dom_l = -1
+limits = [-1,1]
 npop = 100
 gens = 15
 mutationChance = [0.2, 0.1] ## chance of mutation per child, and per genome 
-mutation = 0.9 ## dictates how much a genome can be mutated in percentage
+mutation = 0.45 ## dictates how much a genome can be mutated in percentage
+mutationT = -0.02 ## decrease/increase mutation over time
 last_best = 0
 elitism_size = 0.4 ## percentage of surviving "best parents"
+elitism_sizeT = -0.01 ## decrease/increase elitism size over time
 
 
 # runs simulation
@@ -76,25 +69,22 @@ def simulation(env,x):
 def evaluate(x): 
     return np.array(list(map(lambda y: simulation(env,y), x)))
 
-def limits(x):
-    if x>dom_u:
-        return dom_u
-    elif x<dom_l:
-        return dom_l
+def checkLimits(x):
+    if x>limits[1]:
+        return limits[1]
+    elif x<limits[0]:
+        return limits[0]
     else:
         return x
 
 # select parents
 def parentSelect(pop):
     fitness = evaluate(pop) ## we need to order population from best to worst fitness
-    #pop = [x for _, x in sorted(zip(fitness, pop), reverse=True)] ## <-- couldn't get this to work
     fitness_sorted = np.argsort(-fitness) ## use negation to flip the ordering from ascending to descending
     fitness = fitness[fitness_sorted]
     pop = pop[fitness_sorted]
-
     parents = pop[:int(npop*elitism_size)] ## select certain number of best parents
     fitness = fitness[:int(npop*elitism_size)] 
-
     return parents, fitness ## return the parents and their fitness scores seperately
 
 
@@ -119,35 +109,22 @@ def mutate(offspring):
         if(np.random.uniform(0, 1) < mutationChance[0]):
             for i in range(len(child)): ## iterate through all the genomes
                 if(np.random.uniform(0, 1) < mutationChance[1]):
-                    #child[i] = child[i]+np.random.normal(0,1)
                     child[i] *= (1 + np.random.uniform(-mutation, mutation)) ## apply mutation
-            child = np.array(list(map(lambda y: limits(y), child)))
+                    child[i] = checkLimits(child[i])
     return offspring
 
 
-# kills the worst genomes, and replace with new best/random solutions
-def doomsday(pop,fit_pop):
-    pass  ## might implement later, this messes with population size I think.
-
-
-# loads file with the best solution for testing
-if run_mode =='test':
-
-    bsol = np.loadtxt(experiment_name+'/best.txt')
+def testBest(): ## tests the best solution
+    bestSolution = np.loadtxt(experiment_name+'/best.txt')
     print( '\n RUNNING SAVED BEST SOLUTION \n')
     env.update_parameter('speed','normal')
-    evaluate([bsol])
+    evaluate([bestSolution])
 
     sys.exit(0)
 
-
-# initializes population loading old solutions or generating new ones
-
-if not os.path.exists(experiment_name+'/evoman_solstate'):
-
+def firstGeneration(): ## creates the first generation
     print( '\nNEW EVOLUTION\n')
-
-    pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
+    pop = np.random.uniform(limits[0], limits[1], (npop, nweights))
     fit_pop = evaluate(pop)
     best = np.argmax(fit_pop)
     mean = np.mean(fit_pop)
@@ -156,40 +133,21 @@ if not os.path.exists(experiment_name+'/evoman_solstate'):
     solutions = [pop, fit_pop]
     env.update_solutions(solutions)
 
-else:
-
-    print( '\nCONTINUING EVOLUTION\n')
-
-    env.load_state()
-    pop = env.solutions[0]
-    fit_pop = env.solutions[1]
-
-    best = np.argmax(fit_pop)
-    mean = np.mean(fit_pop)
-    std = np.std(fit_pop)
-
-    # finds last generation number
-    file_aux  = open(experiment_name+'/gen.txt','r')
-    ini_g = int(file_aux.readline())
+    # saves results for first pop
+    file_aux  = open(experiment_name+'/results.txt','a')
+    file_aux.write('\n\ngen best mean std')
+    print( '\n GENERATION '+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6)))
+    file_aux.write('\n'+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6))   )
     file_aux.close()
-
-
-
-
-# saves results for first pop
-file_aux  = open(experiment_name+'/results.txt','a')
-file_aux.write('\n\ngen best mean std')
-print( '\n GENERATION '+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6)))
-file_aux.write('\n'+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6))   )
-file_aux.close()
+    return pop
 
 
 # evolution
+if run_mode =='test':
+    testBest() ## will sys.exit after testing
 
-last_sol = fit_pop[best]
-notimproved = 0
-
-for i in range(ini_g+1, gens): ## evolutional loop
+pop = firstGeneration()
+for i in range(gens): ## evolutional loop
     print('we are in loop number ', i, ' now baby!')
     parents, fit_parents = parentSelect(pop) ## select the best parents
     offspring = crossover(parents)           ## makes offspring, also mutates them.
@@ -200,22 +158,8 @@ for i in range(ini_g+1, gens): ## evolutional loop
     best_sol = fit_pop[best]
     fit_pop[best] = float(evaluate(np.array([pop[best] ]))[0]) # repeats best eval, for stability issues
 
-    # searching new areas
-
-    # if best_sol <= last_sol:
-    #     notimproved += 1
-    # else:
-    #     last_sol = best_sol
-    #     notimproved = 0
-
-    # if notimproved >= 15:
-    #     file_aux  = open(experiment_name+'/results.txt','a')
-    #     file_aux.write('\ndoomsday')
-    #     file_aux.close()
-
-    #     pop, fit_pop = doomsday(pop,fit_pop)
-    #     notimproved = 0
-
+    mutation += mutationT ## decrease mutation severity over time
+    elitism_size += elitism_sizeT 
     best = np.argmax(fit_pop)
     std  =  np.std(fit_pop)
     mean = np.mean(fit_pop)
@@ -241,14 +185,10 @@ for i in range(ini_g+1, gens): ## evolutional loop
     env.save_state()
 
 
-
-
 fim = time.time() # prints total execution time for experiment
 print( '\nExecution time: '+str(round((fim-ini)/60))+' minutes \n')
 
-
 file = open(experiment_name+'/neuroended', 'w')  # saves control (simulation has ended) file for bash loop file
 file.close()
-
 
 env.state_to_log() # checks environment state
