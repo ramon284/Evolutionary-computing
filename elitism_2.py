@@ -13,8 +13,9 @@ import argparse
 
 parser = argparse.ArgumentParser(description="set run_no, exp_name and enemy_type")
 parser.add_argument("--run_no",dest="run_no",default="1")
-parser.add_argument("--exp_name", dest="exp_name", default="elitism_demo_2")
+parser.add_argument("--exp_name", dest="exp_name", default="elitism")
 parser.add_argument("--enemy_type", dest="enemy_type",default="2")
+parser.add_argument("--run_mode", dest="run_mode",default="train")
 args = parser.parse_args()
 
 # choose this for not using visuals and thus making experiments faster
@@ -22,7 +23,7 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = args.exp_name+'_'+args.run_no
+experiment_name = args.exp_name+'_'+args.enemy_type+'_'+args.run_no
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -35,14 +36,15 @@ env = Environment(experiment_name=experiment_name,
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
                   level=2,
-                  speed="fastest")
+                  speed="fastest",
+                  randomini="yes")
 
 
 env.state_to_log() # checks environment state
 ini = time.time()  # sets time marker
 
 
-run_mode = 'test' # train or test
+run_mode = str(args.run_mode) # train or test
 
 # number of weights for multilayer with 10 hidden neurons
 nweights = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
