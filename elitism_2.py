@@ -148,7 +148,7 @@ if run_mode =='test':
     testBest() ## will sys.exit after testing
 
 pop = firstGeneration()
-for i in range(gens): ## evolutional loop
+for i in range(1,gens): ## evolutional loop
     print('we are in loop number ', i, ' now baby!')
     parents, fit_parents = parentSelect(pop) ## select the best parents
     offspring = crossover(parents)           ## makes offspring, also mutates them.
