@@ -124,7 +124,7 @@ if __name__ == '__main__':
     print("local dir:", local_dir)
     config_path = os.path.join(local_dir, 'NEAT/config_neat')
     migs = []
-    for i in range(1):
+    for i in range(10):
         print("-"*60)
         print("run", i)
         migs.append(run(config_path, i))
