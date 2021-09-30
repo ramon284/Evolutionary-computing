@@ -27,8 +27,16 @@ import numpy as np
 from math import fabs,sqrt
 import glob
 
+import argparse
+
+parser = argparse.ArgumentParser(description="set run_no, exp_name and enemy_type")
+parser.add_argument("--exp_name", dest="exp_name", default="neat")
+parser.add_argument("--enemy_type", dest="enemy_type",default="2")
+args = parser.parse_args()
+
+
 # parameters:
-n_generations = 20
+n_generations = 15
 headless = True
 should_visualize = False
 
@@ -37,7 +45,7 @@ if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 
-experiment_name = 'neat_demo'
+experiment_name = args.exp_name+'_'+args.enemy_type
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -45,7 +53,7 @@ if not os.path.exists(experiment_name):
 
 
 env = Environment(experiment_name=experiment_name,
-                  enemies=[8],
+                  enemies=[int(args.enemy_type)],
                   randomini = "yes",
                   playermode="ai",
                   player_controller=PlayerController(),
