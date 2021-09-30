@@ -8,7 +8,7 @@ from controller import Controller
 import numpy as np
 
 # implements controller structure for player
-class player_controller(Controller):
+class PlayerController(Controller):
 
 	def control(self, inputs, controller):
 		# Normalise the input using min-max scaling:

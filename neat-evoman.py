@@ -16,7 +16,8 @@ import pygame
 import sys
 sys.path.insert(0, 'evoman')
 
-from NEAT.player_controller import player_controller
+from NEAT.player_controller import PlayerController
+from NEAT.custom_reporter import EvomanReporter
 
 from environment import Environment
 
@@ -27,7 +28,7 @@ from math import fabs,sqrt
 import glob
 
 # parameters:
-n_generations = 10
+n_generations = 20
 headless = True
 should_visualize = False
 
@@ -47,7 +48,7 @@ env = Environment(experiment_name=experiment_name,
                   enemies=[8],
                   randomini = "yes",
                   playermode="ai",
-                  player_controller=player_controller(),
+                  player_controller=PlayerController(),
                   enemymode="static",
                   level=2,
                   speed="fastest")
@@ -61,21 +62,16 @@ env.state_to_log() # checks environment state
 ini = time.time()  # sets time marker
 
 def simulation(pcont):
-    f, _ , _ ,_ = env.play(pcont=pcont)
+    f, p, e, t = env.play(pcont=pcont)
     return f
 
-def get_statistics(winner):
-    wins = 0
-    ties = 0
-    fs = []
+def get_mean_individual_gain(winner):
+    igs = []
     for _ in range(5):
         f,p,e,t = env.play(pcont=winner)
-        fs.append(f)
-        if e == 0:
-            wins += 1
-        elif t == 0:
-            ties += 1
-    print(str(wins), "wins.", ties, "ties.", "Average fitness:", np.mean(fs), "Fiteness sd:", np.std(fs))
+        igs.append(p - e)
+    return np.mean(igs)
+
 
 def eval_genomes(genomes, config):
     for genome_id, genome in genomes:
@@ -83,7 +79,7 @@ def eval_genomes(genomes, config):
         genome.fitness = simulation(pcont)
 
 
-def run(config_file):
+def run(config_file, n_run= 0):
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -95,8 +91,8 @@ def run(config_file):
     # Add a stdout reporter to show progress in the terminal.
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
-    p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(5))
+    p.add_reporter(EvomanReporter(env.enemies[0], n_run))
+    # p.add_reporter(neat.Checkpointer(5))
 
     # Determine number of generations
     winner = p.run(eval_genomes, n_generations)
@@ -108,9 +104,6 @@ def run(config_file):
 
     print("Took", time.time() - ini, "seconds in total.")
 
-    wcont = neat.nn.FeedForwardNetwork.create(winner, config)
-    get_statistics(wcont)
-
     if should_visualize:
         # try implementing the visualisation of the winning network
         visualize.draw_net(config, winner, True, node_names=None)
@@ -119,7 +112,8 @@ def run(config_file):
     ## runs can be restored from checkpoints as follows:
     # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
     # p.run(eval_genomes, 1)
-
+    wcont = neat.nn.FeedForwardNetwork.create(winner, config)
+    return get_mean_individual_gain(wcont)
 #
 #
 if __name__ == '__main__':
@@ -129,4 +123,9 @@ if __name__ == '__main__':
     local_dir = os.path.dirname(__file__)
     print("local dir:", local_dir)
     config_path = os.path.join(local_dir, 'NEAT/config_neat')
-    run(config_path)
+    migs = []
+    for i in range(1):
+        print("-"*60)
+        print("run", i)
+        migs.append(run(config_path, i))
+    print(migs)
