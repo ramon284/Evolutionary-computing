@@ -90,7 +90,7 @@ class Environment(object):
 
         # initializes log file
         if self.logs  == "on" and self.savelogs == "yes":
-            file_aux  = open(self.experiment_name+'/evoman_logs.txt','w')
+            file_aux  = open(self.experiment_name+'/evoman_logs.txt','a')
             file_aux.close()
 
 
@@ -497,7 +497,7 @@ class Environment(object):
 
             # returns results of the run
             def return_run():
-                self.print_logs("RUN: run status: enemy: "+str(self.enemyn)+"; fitness: " + str(fitness) + "; player life: " + str(self.player.life)  + "; enemy life: " + str(self.enemy.life) + "; time: " + str(self.time))
+                self.print_logs("RUN: run status: enemy: "+str(self.enemyn)+"; fitness: " + str(fitness) + "; player life: " + str(self.player.life)  + "; enemy life: " + str(self.enemy.life) + "; time: " + str(self.time)+"; ind_gain : "+str(self.player.life-self.enemy.life))
 
                 return  fitness, self.player.life, self.enemy.life, self.time
 
