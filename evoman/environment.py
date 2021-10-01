@@ -90,7 +90,7 @@ class Environment(object):
 
         # initializes log file
         if self.logs  == "on" and self.savelogs == "yes":
-            file_aux  = open(self.experiment_name+'/evoman_logs.txt','a')
+            file_aux  = open(self.experiment_name+'/evoman_logs.txt','w')
             file_aux.close()
 
 
