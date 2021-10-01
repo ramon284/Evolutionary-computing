@@ -29,7 +29,7 @@ import glob
 
 import argparse
 
-parser = argparse.ArgumentParser(description="set run_no, exp_name and enemy_type")
+parser = argparse.ArgumentParser(description="set exp_name and enemy_type")
 parser.add_argument("--exp_name", dest="exp_name", default="neat")
 parser.add_argument("--enemy_type", dest="enemy_type",default="2")
 args = parser.parse_args()
