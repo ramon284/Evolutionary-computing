@@ -472,23 +472,23 @@ class Environment(object):
                     return
 
             # updates objects and draws its itens on screen
-            #self.screen.fill((250,250,250))
+            self.screen.fill((250,250,250))
             self.tilemap.update( 33 / 1000., self)
-            #self.tilemap.draw(self.screen)
+            self.tilemap.draw(self.screen)
 
             # player life bar
             vbar = int(100 *( 1-(self.player.life/float(self.player.max_life)) ))
-            #pygame.draw.line(self.screen, (0,   0,   0), [40, 40],[140, 40], 2)
-            #pygame.draw.line(self.screen, (0,   0,   0), [40, 45],[140, 45], 5)
-            #pygame.draw.line(self.screen, (150,24,25),   [40, 45],[140 - vbar, 45], 5)
-            #pygame.draw.line(self.screen, (0,   0,   0), [40, 49],[140, 49], 2)
+            pygame.draw.line(self.screen, (0,   0,   0), [40, 40],[140, 40], 2)
+            pygame.draw.line(self.screen, (0,   0,   0), [40, 45],[140, 45], 5)
+            pygame.draw.line(self.screen, (150,24,25),   [40, 45],[140 - vbar, 45], 5)
+            pygame.draw.line(self.screen, (0,   0,   0), [40, 49],[140, 49], 2)
 
             # enemy life bar
             vbar = int(100 *( 1-(self.enemy.life/float(self.enemy.max_life)) ))
-            #pygame.draw.line(self.screen, (0,   0,   0), [590, 40],[695, 40], 2)
-            #pygame.draw.line(self.screen, (0,   0,   0), [590, 45],[695, 45], 5)
-            #pygame.draw.line(self.screen, (194,118,55),  [590, 45],[695 - vbar, 45], 5)
-            #pygame.draw.line(self.screen, (0,   0,   0), [590, 49],[695, 49], 2)
+            pygame.draw.line(self.screen, (0,   0,   0), [590, 40],[695, 40], 2)
+            pygame.draw.line(self.screen, (0,   0,   0), [590, 45],[695, 45], 5)
+            pygame.draw.line(self.screen, (194,118,55),  [590, 45],[695 - vbar, 45], 5)
+            pygame.draw.line(self.screen, (0,   0,   0), [590, 49],[695, 49], 2)
 
 
             #gets fitness for training agents
@@ -497,8 +497,7 @@ class Environment(object):
 
             # returns results of the run
             def return_run():
-                self.print_logs("RUN: run status: enemy: "+str(self.enemyn)+"; fitness: " + str(fitness) + "; player life: " + str(self.player.life)  + "; enemy life: " + str(self.enemy.life) + "; time: " + str(self.time)+"; ind_gain : "+str(self.player.life-self.enemy.life))
-
+                self.print_logs("RUN: run status: enemy: "+str(self.enemyn)+"; fitness: " + str(fitness) + "; player life: " + str(self.player.life)  + "; enemy life: " + str(self.enemy.life) + "; time: " + str(self.time))
                 return  fitness, self.player.life, self.enemy.life, self.time
 
 
