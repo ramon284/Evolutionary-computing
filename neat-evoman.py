@@ -53,13 +53,14 @@ if not os.path.exists(experiment_name):
 
 
 env = Environment(experiment_name=experiment_name,
-                  enemies=[int(args.enemy_type)],
+                  enemies=[int(args.enemy_type[0]),int(args.enemy_type[1])],#,int(args.enemy_type[2])],
                   randomini = "yes",
                   playermode="ai",
                   player_controller=PlayerController(),
                   enemymode="static",
                   level=2,
-                  speed="fastest")
+                  speed="fastest",
+                  multiplemode="yes")
 
 # default environment fitness is assumed for experiment
 
@@ -71,12 +72,21 @@ ini = time.time()  # sets time marker
 
 def simulation(pcont):
     f, p, e, t = env.play(pcont=pcont)
-    return f
+    return p-e
 
 def get_mean_individual_gain(winner):
     igs = []
+    env2 = Environment(experiment_name=experiment_name,
+                  enemies=[1,2,3,4,5,6,7,8],#,int(args.enemy_type[2])],
+                  randomini = "yes",
+                  playermode="ai",
+                  player_controller=PlayerController(),
+                  enemymode="static",
+                  level=2,
+                  speed="fastest",
+                  multiplemode="yes")
     for _ in range(5):
-        f,p,e,t = env.play(pcont=winner)
+        f,p,e,t = env2.play(pcont=winner)
         igs.append(p - e)
     return np.mean(igs)
 
@@ -99,7 +109,7 @@ def run(config_file, n_run= 0):
     # Add a stdout reporter to show progress in the terminal.
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
-    p.add_reporter(EvomanReporter(env.enemies[0], n_run))
+    p.add_reporter(EvomanReporter(env.enemies, n_run))
     # p.add_reporter(neat.Checkpointer(5))
 
     # Determine number of generations
@@ -132,8 +142,8 @@ if __name__ == '__main__':
     print("local dir:", local_dir)
     config_path = os.path.join(local_dir, 'NEAT/config_neat')
     migs = []
-    for i in range(10):
-        print("-"*60)
-        print("run", i)
-        migs.append(run(config_path, i))
+    #for i in range(10):
+    #    print("-"*60)
+    #    print("run", i)
+    migs.append(run(config_path, 0))
     print(migs)

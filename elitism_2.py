@@ -29,15 +29,28 @@ if not os.path.exists(experiment_name):
 
 n_hidden_neurons = 10
 
-# initializes simulation in individual evolution mode, for single static enemy.
-env = Environment(experiment_name=experiment_name,
-                  enemies=[int(args.enemy_type)],
+if(args.run_mode == "test"):
+    env = Environment(experiment_name=experiment_name,
+                  enemies=[1,2,3,4,5,6,7,8],#,int(args.enemy_type[2])],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
                   level=2,
                   speed="fastest",
-                  randomini="yes")
+                  randomini="yes",
+                  multiplemode="yes")
+
+else:
+# initializes simulation in individual evolution mode, for single static enemy.
+    env = Environment(experiment_name=experiment_name,
+                    enemies=[int(args.enemy_type[0]),int(args.enemy_type[1]),int(args.enemy_type[2])],
+                    playermode="ai",
+                    player_controller=player_controller(n_hidden_neurons),
+                    enemymode="static",
+                    level=2,
+                    speed="fastest",
+                    randomini="yes",
+                    multiplemode="yes")
 
 
 env.state_to_log() # checks environment state
@@ -64,7 +77,7 @@ elitism_sizeT = -0.01 ## decrease/increase elitism size over time
 # runs simulation
 def simulation(env,x):
     f,p,e,t = env.play(pcont=x)
-    return f
+    return p-e
 
 # evaluation
 def evaluate(x): 
