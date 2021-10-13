@@ -5,6 +5,7 @@ from environment import Environment
 from demo_controller import player_controller
 
 # imports other libs
+from math import ceil, floor
 import time
 import numpy as np
 from math import fabs,sqrt
@@ -30,15 +31,28 @@ if not os.path.exists(experiment_name):
 n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
-env = Environment(experiment_name=experiment_name,
-                  enemies=[2],
+if(args.run_mode == "test"):
+    env = Environment(experiment_name=experiment_name,
+                  enemies=[1,2,3,4,5,6,7,8],#,int(args.enemy_type[2])],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
                   level=2,
                   speed="fastest",
                   randomini="yes",
-                  multiplemode="no")
+                  multiplemode="yes")
+
+else:
+# initializes simulation in individual evolution mode, for single static enemy.
+    env = Environment(experiment_name=experiment_name,
+                    enemies=[2,5],
+                    playermode="ai",
+                    player_controller=player_controller(n_hidden_neurons),
+                    enemymode="static",
+                    level=2,
+                    speed="fastest",
+                    randomini="yes",
+                    multiplemode="yes")
 
 
 env.state_to_log() # checks environment state
@@ -58,9 +72,11 @@ mutationChance = [0.2, 0.1] ## chance of mutation per child, and per genome
 mutation = 0.45 ## dictates how much a genome can be mutated in percentage
 mutationT = -0.02 ## decrease/increase mutation over time
 last_best = 0
-elitism_size = 0.4 ## percentage of surviving "best parents"
+elitism_size = 0.20 ## percentage of surviving "best parents"
 elitism_sizeT = 0 ## decrease/increase elitism size over time
-distance_size = 0
+distance_size = 4
+crossoverMethod = "uniform" ## even takes 50% of genomes of both parents, and "uniform" flips a coin for every genome
+
 
 
 # runs simulation
@@ -117,13 +133,21 @@ def crossover(parents):
     print('hoeveelheid parents:', parents.shape, 'hoeveelheid children:', nchildren)
     ngenomes = len(parents[0]) ## number of genomes
     offspring = np.empty([nchildren, ngenomes]) ## empty offspring matrix
-    for i in range (nchildren):
-        first, second = np.random.choice(len(parents), 2, replace=False)
-        for j in range(ngenomes):
-            if(np.random.uniform(0, 1) < 0.5): 
-                offspring[i][j] = parents[first][j]  
-            else: ## take 1 genome from either parent 1 or 2 at random, for all genomes
-                offspring[i][j] = parents[second][j]
+    if (crossoverMethod  == "uniform"):
+        for i in range (nchildren):
+            first, second = np.random.choice(len(parents), 2, replace=False)
+            for j in range(ngenomes):
+                if(np.random.uniform(0, 1) < 0.5): 
+                    offspring[i][j] = parents[first][j]  
+                else: ## take 1 genome from either parent 1 or 2 at random, for all genomes
+                    offspring[i][j] = parents[second][j]
+
+    if (crossoverMethod == "even"):
+        for i in range(nchildren):
+            first, second = np.random.choice(len(parents), 2, replace=False)
+            cutoff = (int(floor(nweights/2)))
+            offspring[i][:cutoff] = parents[first][:cutoff]
+            offspring[i][cutoff:] = parents[second][cutoff:]
     mutate(offspring)
     return offspring
 
