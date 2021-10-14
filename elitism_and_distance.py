@@ -64,18 +64,19 @@ run_mode = str(args.run_mode) # train or test
 # number of weights for multilayer with 10 hidden neurons
 nweights = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 
-
 limits = [-1,1]
 npop = 100
 gens = 15
+
 mutationChance = [0.2, 0.1] ## chance of mutation per child, and per genome 
 mutation = 0.45 ## dictates how much a genome can be mutated in percentage
 mutationT = -0.02 ## decrease/increase mutation over time
-last_best = 0
+
 elitism_size = 0.20 ## percentage of surviving "best parents"
 elitism_sizeT = 0 ## decrease/increase elitism size over time
-distance_size = 4
-crossoverMethod = "uniform" ## even takes 50% of genomes of both parents, and "uniform" flips a coin for every genome
+distance_size = 4 ## how many of the most genetically distant parents we choose. can set to 0 to ignore
+
+crossoverMethod = "uniform" ## "even" takes 50% of genomes of both parents, and "uniform" flips a coin for every genome
 
 
 
