@@ -66,18 +66,19 @@ nweights = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 
 limits = [-1,1]
 npop = 100
-gens = 15
+gens = 10
 
 mutationChance = [0.2, 0.1] ## chance of mutation per child, and per genome 
 mutation = 0.45 ## dictates how much a genome can be mutated in percentage
 mutationT = -0.02 ## decrease/increase mutation over time
 
 elitism_size = 0.20 ## percentage of surviving "best parents"
-elitism_sizeT = 0 ## decrease/increase elitism size over time
-distance_size = 4 ## how many of the most genetically distant parents we choose. can set to 0 to ignore
+elitism_sizeT = 0.01 ## decrease/increase elitism size over time
+distance_size = 4 ## how many of the most genetically distant parents we choose.
+
+distanceMethod = "phenotype" ## "genotype" to select for distant genomes, "phenotype" to select for distant (worst) fitness. leave empty to ignore.
 
 crossoverMethod = "uniform" ## "even" takes 50% of genomes of both parents, and "uniform" flips a coin for every genome
-
 
 
 # runs simulation
@@ -97,7 +98,7 @@ def checkLimits(x):
     else:
         return x
 
-def checkDistance(parent, pop): ## check most genetically distant
+def checkGeneticDistance(parent, pop): ## check who is the most genetically distant
     distanceList = []
     for individual in pop: ## compare parent to each individual here
         distance = 0
@@ -105,7 +106,7 @@ def checkDistance(parent, pop): ## check most genetically distant
             distance += abs(x-y) ## calculate absolute distance between all genomes combined
         distanceList.append(distance)
     print('smallest: ', min(distanceList), 'biggest: ',max(distanceList))
-    return distanceList.index(max(distanceList))
+    return distanceList.index(max(distanceList)) ## I.E. [1,1,1,-1,1] genetically most distant -> [-1,-1,-1,1,-1]
 
 # select parents
 def parentSelect(pop):
@@ -114,18 +115,22 @@ def parentSelect(pop):
     fitness = fitness[fitness_sorted]
     pop = pop[fitness_sorted]
     parents = pop[:int(npop*elitism_size)] ## select certain number of best parents
-    nonparents = pop[int(npop*elitism_size):]
-    nonfitness = fitness[int(npop*elitism_size):] ## fitness of non-selected parents
-    fitness = fitness[:int(npop*elitism_size)] 
-    #print('parent shape before:', parents.shape)
-    for i in range(distance_size):
-        x = checkDistance(parents[i], nonparents)
-        parents = np.append(parents, np.array([nonparents[x]]), 0)
-        nonparents = np.delete(nonparents, x, 0)
-        fitness = np.append(fitness, np.array([nonfitness[x]]), 0)
-        nonfitness = np.delete(nonfitness, x , 0)
-    #print('parent shape after:', parents.shape)
-    return parents, fitness ## return the parents and their fitness scores seperately
+    fitnessParents = fitness[:int(npop*elitism_size)] 
+    if(distanceMethod == "genotype"):
+        nonparents = pop[int(npop*elitism_size):] ## for this to work we need the population without the selected parents
+        nonfitness = fitness[int(npop*elitism_size):] ## fitness of non-selected parents
+        for i in range(distance_size):
+            x = checkGeneticDistance(parents[i], nonparents)
+            parents = np.append(parents, np.array([nonparents[x]]), 0)
+            nonparents = np.delete(nonparents, x, 0)
+            fitness = np.append(fitness, np.array([nonfitness[x]]), 0)
+            nonfitness = np.delete(nonfitness, x , 0)
+    elif(distanceMethod == "phenotype"): ## add X number of parents with the worst fitness for diversity
+        worstParents = pop[int(npop-distance_size):]
+        worstFitness = fitness[int(npop-distance_size):]
+        parents = np.append(parents, worstParents, 0)
+        fitnessParents = np.append(fitnessParents, worstFitness, 0)
+    return parents, fitnessParents ## return the parents and their fitness scores seperately
 
 
 ## use best performing parents for crossover
@@ -142,13 +147,14 @@ def crossover(parents):
                     offspring[i][j] = parents[first][j]  
                 else: ## take 1 genome from either parent 1 or 2 at random, for all genomes
                     offspring[i][j] = parents[second][j]
-
     if (crossoverMethod == "even"):
         for i in range(nchildren):
             first, second = np.random.choice(len(parents), 2, replace=False)
             cutoff = (int(floor(nweights/2)))
             offspring[i][:cutoff] = parents[first][:cutoff]
             offspring[i][cutoff:] = parents[second][cutoff:]
+    if (crossoverMethod == "???"): ## you can try to add a different crossover method here
+        pass
     mutate(offspring)
     return offspring
 
