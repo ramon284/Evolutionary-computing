@@ -96,7 +96,32 @@ def eval_genomes(genomes, config):
         pcont = neat.nn.FeedForwardNetwork.create(genome, config)
         genome.fitness = simulation(pcont)
 
+def write_genome_weights(genome):
+    folder_name = os.path.join(os.getcwd(), "NEAT_results")
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
 
+    #create full file name
+    filename = os.path.join(folder_name, "best.txt")
+    nodes = list(genome.nodes.values())
+    nodes.sort()
+    connections = list(genome.connections.values())
+    connections.sort()
+    # write header
+    with open(filename, 'w') as f:
+        #first write the biases for the hidden neurons
+        for node in nodes[5:]:
+            f.write(str(getattr(node, "bias")) + "\n")
+        #write the connections between the input layer and the hidden layer
+        for connection in connections[:200]:
+            f.write(str(getattr(connection, "weight")) + "\n")
+        #write the biases for the output neurons
+        for node in nodes[:5]:
+            f.write(str(getattr(node, "bias")) + "\n")
+        #write the connections between the hidden layer and the output layer
+        for connection in connections[200:]:
+            f.write(str(getattr(connection, "weight")) + "\n")
+        
 def run(config_file, n_run= 0):
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
