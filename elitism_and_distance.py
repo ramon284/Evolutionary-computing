@@ -45,7 +45,7 @@ if(args.run_mode == "test"):
 else:
 # initializes simulation in individual evolution mode, for single static enemy.
     env = Environment(experiment_name=experiment_name,
-                    enemies=[int(args.enemy_type[0]),int(args.enemy_type[1])],#int(args.enemy_type[2])],
+                    enemies=[int(args.enemy_type[0]),int(args.enemy_type[1]),int(args.enemy_type[2])],
                     playermode="ai",
                     player_controller=player_controller(n_hidden_neurons),
                     enemymode="static",
