@@ -54,7 +54,7 @@ if not os.path.exists(experiment_name):
 
 
 env = Environment(experiment_name=experiment_name,
-                  enemies=[int(args.enemy_type[0]),int(args.enemy_type[1]),int(args.enemy_type[2])],
+                  enemies=[int(args.enemy_type[0]),int(args.enemy_type[1])],#int(args.enemy_type[2])],
                   randomini = "yes",
                   playermode="ai",
                   player_controller=PlayerController(),
@@ -84,7 +84,7 @@ def get_mean_individual_gain(winner):
                   player_controller=PlayerController(),
                   enemymode="static",
                   level=2,
-                  speed="normal",
+                  speed="fastest",
                   multiplemode="yes")
     for _ in range(5):
         f,p,e,t = env2.play(pcont=winner)
@@ -172,7 +172,7 @@ if __name__ == '__main__':
     #for i in range(10):
     #    print("-"*60)
     #    print("run", i)
-    migs.append(run(config_path, 0))
+    migs.append(run(config_path, args.run_no))
     print(migs)
     folder_name = os.path.join(os.getcwd(), "NEAT_results")
     if not os.path.exists(folder_name):
