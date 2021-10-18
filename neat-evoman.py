@@ -32,11 +32,12 @@ import argparse
 parser = argparse.ArgumentParser(description="set exp_name and enemy_type")
 parser.add_argument("--exp_name", dest="exp_name", default="neat")
 parser.add_argument("--enemy_type", dest="enemy_type",default="2")
+parser.add_argument("--run_no", dest="run_no", default="1")
 args = parser.parse_args()
 
 
 # parameters:
-n_generations = 15
+n_generations = 20
 headless = True
 should_visualize = False
 
@@ -45,7 +46,7 @@ if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 
-experiment_name = args.exp_name+'_'+args.enemy_type
+experiment_name = args.exp_name+'_'+args.enemy_type+'_'+args.run_no
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -53,7 +54,7 @@ if not os.path.exists(experiment_name):
 
 
 env = Environment(experiment_name=experiment_name,
-                  enemies=[int(args.enemy_type[0]),int(args.enemy_type[1])],#,int(args.enemy_type[2])],
+                  enemies=[int(args.enemy_type[0]),int(args.enemy_type[1]),int(args.enemy_type[2])],
                   randomini = "yes",
                   playermode="ai",
                   player_controller=PlayerController(),
@@ -83,7 +84,7 @@ def get_mean_individual_gain(winner):
                   player_controller=PlayerController(),
                   enemymode="static",
                   level=2,
-                  speed="fastest",
+                  speed="normal",
                   multiplemode="yes")
     for _ in range(5):
         f,p,e,t = env2.play(pcont=winner)
@@ -102,7 +103,7 @@ def write_genome_weights(genome):
         os.makedirs(folder_name)
 
     #create full file name
-    filename = os.path.join(folder_name, "best.txt")
+    filename = os.path.join(folder_name, str(args.enemy_type+'_'+args.run_no+"_best.txt"))
     nodes = list(genome.nodes.values())
     nodes.sort()
     connections = list(genome.connections.values())
@@ -155,6 +156,7 @@ def run(config_file, n_run= 0):
     ## runs can be restored from checkpoints as follows:
     # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
     # p.run(eval_genomes, 1)
+    write_genome_weights(winner)
     wcont = neat.nn.FeedForwardNetwork.create(winner, config)
     return get_mean_individual_gain(wcont)
 #
@@ -172,3 +174,11 @@ if __name__ == '__main__':
     #    print("run", i)
     migs.append(run(config_path, 0))
     print(migs)
+    folder_name = os.path.join(os.getcwd(), "NEAT_results")
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
+    #create full file name
+    filename = os.path.join(folder_name, str(args.enemy_type+'_'+args.run_no+"_mean.txt"))
+    with open(filename, 'w') as f:
+        f.write(str(migs))
