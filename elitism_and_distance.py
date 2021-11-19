@@ -45,7 +45,7 @@ if(args.run_mode == "test"):
 else:
 # initializes simulation in individual evolution mode, for single static enemy.
     env = Environment(experiment_name=experiment_name,
-                    enemies=[2,5],
+                    enemies=[2,5,6],
                     playermode="ai",
                     player_controller=player_controller(n_hidden_neurons),
                     enemymode="static",
@@ -57,7 +57,6 @@ else:
 
 env.state_to_log() # checks environment state
 ini = time.time()  # sets time marker
-
 
 run_mode = str(args.run_mode) # train or test
 
@@ -73,12 +72,12 @@ mutation = 0.45 ## dictates how much a genome can be mutated in percentage
 mutationT = -0.02 ## decrease/increase mutation over time
 
 elitism_size = 0.20 ## percentage of surviving "best parents"
-elitism_sizeT = 0.01 ## decrease/increase elitism size over time
-distance_size = 4 ## how many of the most genetically distant parents we choose.
+elitism_sizeT = 0.02 ## decrease/increase elitism size over time
+distance_size = 2 ## how many of the most genetically distant parents we choose.
 
-distanceMethod = "phenotype" ## "genotype" to select for distant genomes, "phenotype" to select for distant (worst) fitness. leave empty to ignore.
+distanceMethod = "genotype" ## "genotype" to select for distant genomes, "phenotype" to select for distant (worst) fitness. leave empty to ignore.
 
-crossoverMethod = "uniform" ## "even" takes 50% of genomes of both parents, and "uniform" flips a coin for every genome
+crossoverMethod = "average" ## "even" takes 50% of genomes of both parents, and "uniform" flips a coin for every genome
 
 
 # runs simulation
@@ -153,8 +152,11 @@ def crossover(parents):
             cutoff = (int(floor(nweights/2)))
             offspring[i][:cutoff] = parents[first][:cutoff]
             offspring[i][cutoff:] = parents[second][cutoff:]
-    if (crossoverMethod == "???"): ## you can try to add a different crossover method here
-        pass
+    if (crossoverMethod == "average"): ## you can try to add a different crossover method here
+        for i in range (nchildren):
+            first, second = np.random.choice(len(parents), 2, replace=False)
+            for j in range(ngenomes):
+                offspring[i][i] = (parents[first][j] + parents[second][j]) / 2
     mutate(offspring)
     return offspring
 
