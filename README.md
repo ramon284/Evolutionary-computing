@@ -1,4 +1,4 @@
-Project for the VU course evolutionary computing. The goal is to evolve the network of a neural network to be able to beat enemies in a video game environment (Evoman).
+Project for the VU course evolutionary computing. The goal is to evolve the weights of a neural network to be able to beat enemies in a video game environment (Evoman).
 
 Evoman is a video game playing framework inspired by Megaman.
 
